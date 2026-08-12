@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: hunar-ai-hiring-assistant
+    env: node
+    plan: starter
+    buildCommand: ""
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HUNAR_API_KEY
+        sync: false
+      - key: APOLLO_API_KEY
+        sync: false
+      - key: APP_BASE_URL
+        sync: false
+      - key: HUNAR_DEFAULT_AGENT_ID
+        sync: false
+      - key: HUNAR_DEFAULT_FROM_PHONE_NUMBER
+        sync: false
+      - key: HUNAR_WEBHOOK_SECRET
+        sync: false

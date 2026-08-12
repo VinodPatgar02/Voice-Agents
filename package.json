@@ -1,0 +1,23 @@
+{
+  "name": "hunar-ai-hiring-assistant",
+  "version": "1.0.0",
+  "description": "AI Hiring Assistant and People Search reachout dashboard using Hunar Voice AI Agents and Apollo people search.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "hunar",
+    "voice-ai",
+    "hiring",
+    "apollo",
+    "recruiting"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
