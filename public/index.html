@@ -1,49 +1,65 @@
+
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hunar AI Hiring Assistant</title>
+    <title>Hunar AI · Voice Hiring Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="shell">
       <aside class="sidebar">
         <div class="brand">
-          <span class="brand-mark">H</span>
-          <div>
-            <strong>Hunar Hiring</strong>
-            <small>Voice AI reachout dashboard</small>
+          <span class="brand-mark" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i>
+          </span>
+          <div class="brand-name">
+            <strong>Hunar AI</strong>
+            <small>Voice hiring agent</small>
           </div>
         </div>
-        <nav>
-          <a href="#assistant" class="active">AI Hiring Assistant</a>
-          <a href="#people">People Search & Reachout</a>
-          <a href="#dashboard">Dashboard</a>
-          <a href="#attendance">Attendance Plan</a>
+
+        <nav aria-label="Sections">
+          <a href="#assistant" class="active"><span class="nav-index">01</span>Job description</a>
+          <a href="#people"><span class="nav-index">02</span>Sourcing &amp; reachout</a>
+          <a href="#dashboard"><span class="nav-index">03</span>Call dashboard</a>
+          <a href="#attendance"><span class="nav-index">04</span>Attendance design</a>
         </nav>
-        <div class="config-card" id="configCard">Checking API configuration...</div>
       </aside>
 
       <main>
         <section class="hero">
-          <div>
-            <p class="eyebrow">Assignment build</p>
-            <h1>AI Hiring Assistant powered by Hunar Voice AI Agents</h1>
-            <p>
-              Paste a job description, source candidates, launch Hunar voice reachout,
-              and track call answers/results in one dashboard.
-            </p>
+          <div class="hero-copy">
+            <p class="eyebrow">Hunar AI</p>
+            <h1>Voice AI Hiring Agents</h1>
+            <div class="hero-actions">
+              <a href="#assistant" class="link-button solid">Start with a job description</a>
+              <a href="#dashboard" class="link-button ghost">Call dashboard</a>
+            </div>
+          </div>
+          <div class="hero-panel" aria-hidden="true">
+            <div class="call-visual">
+              <div class="call-visual-top">
+                <span class="live-dot"></span> Live agent
+              </div>
+              <div class="waveform-big">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
           </div>
         </section>
 
         <section id="assistant" class="panel">
           <div class="panel-title">
             <div>
-              <p class="eyebrow">Step 1</p>
+              <p class="eyebrow">Step 01</p>
               <h2>Job description</h2>
             </div>
-            <button id="saveJobBtn">Save job</button>
+            <button id="saveJobBtn" class="primary">Save job</button>
           </div>
           <div class="grid two">
             <label>
@@ -56,51 +72,20 @@
             </label>
           </div>
           <label>
-            Job description
-            <textarea id="jobDescription" rows="10" placeholder="Paste the complete job description here..."></textarea>
+            Job Description
+            <textarea id="jobDescription" rows="10" placeholder="Paste the complete job description here…"></textarea>
           </label>
           <div class="actions">
-            <button class="primary" id="searchPeopleBtn">Search people with Apollo</button>
-            <button id="generateSourcingBtn">Generate sourcing links</button>
-            <span id="jobStatus" class="muted"></span>
+            <span id="jobStatus" class="muted status-text"></span>
           </div>
         </section>
 
         <section id="people" class="panel">
           <div class="panel-title">
             <div>
-              <p class="eyebrow">Step 2</p>
-              <h2>People Search & Reachout</h2>
-            </div>
-            <button id="saveCandidatesBtn">Add selected to dashboard</button>
-          </div>
-          <div class="notice">
-            Apollo/PDL/Proxycurl/Coresignal were API-gated for personal signup, and Hunar approved using a feasible workaround.
-            This page supports Apollo if a paid key is added, plus CSV/manual candidate intake for a complete Hunar voice demo.
-          </div>
-          <div class="grid three">
-            <label>
-              Titles override
-              <input id="titlesOverride" placeholder="sales manager, recruiter" />
-            </label>
-            <label>
-              Location override
-              <input id="locationOverride" placeholder="India" />
-            </label>
-            <label>
-              Result limit
-              <input id="resultLimit" type="number" min="1" max="100" value="10" />
-            </label>
-          </div>
-          <div id="sourcingLinks" class="sourcing-links"></div>
-          <div id="peopleResults" class="cards empty">Search results will appear here.</div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">Fallback candidate intake</p>
-              <h2>CSV or manual candidates</h2>
+              <p class="eyebrow">Step 02</p>
+              <h2>Sourcing & Reachout</h2>
+              <p class="panel-sub">Upload a CSV or add manual candidates.</p>
             </div>
             <button id="downloadSampleCsvBtn">Download sample CSV</button>
           </div>
@@ -109,33 +94,32 @@
               Upload CSV
               <input id="candidateCsv" type="file" accept=".csv,text/csv" />
             </label>
-            <label>
-              Expected columns
-              <input value="name,title,company,location,email,phone,linkedinUrl" readonly />
-            </label>
           </div>
           <div class="manual-card">
-            <h3>Add one candidate manually</h3>
+            <h3>Add candidate manually</h3>
             <div class="grid three">
-              <label>Name<input id="manualName" placeholder="Candidate name" /></label>
-              <label>Title<input id="manualTitle" placeholder="Current title" /></label>
-              <label>Company<input id="manualCompany" placeholder="Current company" /></label>
-              <label>Location<input id="manualLocation" placeholder="City / country" /></label>
-              <label>Email<input id="manualEmail" placeholder="email@example.com" /></label>
-              <label>Phone<input id="manualPhone" placeholder="+91..." /></label>
+              <label>Name<input id="manualName" placeholder="Candidate name" required /></label>
+              <label>Title<input id="manualTitle" placeholder="Current title" required /></label>
+              <label>Company<input id="manualCompany" placeholder="Current company" required /></label>
+              <label>Location<input id="manualLocation" placeholder="City / country" required /></label>
+              <label>Email<input id="manualEmail" type="email" placeholder="email@example.com" required /></label>
+              <label>Phone<input id="manualPhone" placeholder="+91…" required /></label>
             </div>
-            <label>LinkedIn URL<input id="manualLinkedIn" placeholder="https://linkedin.com/in/..." /></label>
-            <button id="addManualCandidateBtn">Add manual candidate to results</button>
+            <label>LinkedIn URL<input id="manualLinkedIn" placeholder="https://linkedin.com/in/…" /></label>
+            <div class="button-row">
+              <button id="addManualCandidateBtn" class="primary">Add Candidate</button>
+              <button id="cancelEditCandidateBtn" type="button" class="secondary hidden">Cancel edit</button>
+            </div>
           </div>
+          <div id="peopleResults" class="cards empty">Upload a CSV or add manual candidates to see results here.</div>
         </section>
 
         <section class="panel">
           <div class="panel-title">
             <div>
-              <p class="eyebrow">Step 3</p>
-              <h2>Hunar Voice AI reachout</h2>
+              <p class="eyebrow">Step 03</p>
+              <h2>Voice AI Reachout</h2>
             </div>
-            <button id="refreshHunarBtn">Load Hunar agents & numbers</button>
           </div>
           <div class="grid two">
             <label>
@@ -153,20 +137,19 @@
           </label>
           <div class="actions">
             <button class="primary" id="startReachoutBtn">Start voice reachout for selected candidates</button>
-            <span id="reachoutStatus" class="muted"></span>
+            <span id="reachoutStatus" class="muted status-text"></span>
           </div>
         </section>
 
         <section id="dashboard" class="panel">
           <div class="panel-title">
             <div>
-              <p class="eyebrow">Live dashboard</p>
-              <h2>Conversation responses and call results</h2>
+              <p class="eyebrow">Live Dashboard</p>
+              <h2>Conversation responses &amp; call results</h2>
             </div>
             <div class="button-row">
-              <button id="enrichPhonesBtn">Request Apollo phone enrichment</button>
-              <button id="syncCallsBtn">Sync Hunar calls</button>
-              <button id="refreshDashboardBtn">Refresh dashboard</button>
+              <button id="refreshDashboardBtn" class="primary">Refresh</button>
+              <button id="syncCallsBtn">Sync</button>
             </div>
           </div>
           <div class="stats">
@@ -179,12 +162,12 @@
             <table>
               <thead>
                 <tr>
-                  <th>Select</th>
+                  <th>SL. No.</th>
                   <th>Candidate</th>
                   <th>Company</th>
                   <th>Phone</th>
                   <th>Status</th>
-                  <th>Answers / Result</th>
+                  <th>Answers / result</th>
                 </tr>
               </thead>
               <tbody id="dashboardRows"></tbody>
@@ -193,33 +176,37 @@
         </section>
 
         <section id="attendance" class="panel">
-          <p class="eyebrow">Assignment question 3</p>
-          <h2>No smartphones, LLMs exist: attendance for 1000 people across 100 locations</h2>
+          <p class="eyebrow">Assignment question 03</p>
+          <h2>No smartphones, no LLMs: attendance for 1,000 people across 100 locations</h2>
           <div class="attendance-grid">
             <article>
+              <span class="attendance-index">01</span>
               <h3>Core idea</h3>
               <p>
-                Use voice-first and shared-device attendance: each site has a landline/basic phone,
-                biometric terminal, or supervisor kiosk. Employees mark attendance with employee ID
-                plus voice confirmation or biometric scan. An LLM reconciles exceptions, detects anomalies,
-                and calls supervisors/employees for clarification.
+                Voice-first, shared-device attendance: each site keeps a landline or basic phone, a biometric
+                terminal, or a supervisor kiosk. Employees mark attendance with an employee ID plus a spoken
+                confirmation or biometric scan. An LLM reconciles exceptions, flags anomalies, and calls
+                supervisors or employees for clarification.
               </p>
             </article>
             <article>
+              <span class="attendance-index">02</span>
               <h3>Daily workflow</h3>
               <ol>
                 <li>Employee checks in from the location terminal or calls the IVR number.</li>
-                <li>System verifies employee ID, location code, shift, and optional voice biometric phrase.</li>
+                <li>System verifies employee ID, location code, shift, and an optional spoken passphrase.</li>
                 <li>LLM flags missing, duplicate, late, or wrong-location records.</li>
                 <li>Voice AI calls supervisors for unresolved exceptions before payroll cutoff.</li>
-                <li>HR sees a dashboard by location, shift, attendance status, and unresolved cases.</li>
+                <li>HR reviews a dashboard by location, shift, status, and open cases.</li>
               </ol>
             </article>
             <article>
+              <span class="attendance-index">03</span>
               <h3>Controls</h3>
               <p>
                 Location-specific phone lines or terminal IDs, rotating spoken passphrases, supervisor approval,
-                CCTV/register fallback for low-connectivity sites, audit logs, and exception sampling prevent proxy attendance.
+                a CCTV or paper-register fallback for low-connectivity sites, audit logs, and exception sampling
+                keep proxy attendance out of the system.
               </p>
             </article>
           </div>

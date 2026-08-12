@@ -382,19 +382,22 @@ async function handleApi(req, res, url) {
       ? `${process.env.APP_BASE_URL.replace(/\/$/, "")}/api/webhooks/hunar`
       : undefined;
 
-    const shared = {
-      agent_id: agentId,
-      request_id: id("batch"),
-      from_phone_number: body.fromPhoneNumber || process.env.HUNAR_DEFAULT_FROM_PHONE_NUMBER || undefined,
-      callback_config: callbackConfig
-    };
-
     const callbackConfig = callbackUrl ? {
-      call_status_callback_url: callbackUrl,
-      call_result_callback_url: callbackUrl,
-      call_summary_callback_url: callbackUrl,
-      call_recording_callback_url: callbackUrl
-    } : undefined;
+  call_status_callback_url: callbackUrl,
+  call_result_callback_url: callbackUrl,
+  call_summary_callback_url: callbackUrl,
+  call_recording_callback_url: callbackUrl
+} : undefined;
+
+const shared = {
+  agent_id: agentId,
+  request_id: id("batch"),
+  from_phone_number:
+    body.fromPhoneNumber ||
+    process.env.HUNAR_DEFAULT_FROM_PHONE_NUMBER ||
+    undefined,
+  callback_config: callbackConfig
+};
 
     let createdCalls = [];
     if (callable.length === 1) {
