@@ -1,74 +1,68 @@
 # Hunar AI Hiring Assistant
 
-A web application for the assignment:
-
-1. AI Hiring Assistant using Hunar Voice AI Agents.
-2. People Search & Reachout using Apollo People Search plus Hunar voice reachout, with CSV/manual candidate intake as the approved workaround when people-search API access is blocked.
-3. A concrete HR attendance-tracking solution for 1000 people across 100 locations without smartphones.
+A lightweight web app for voice-driven candidate outreach using Hunar Voice AI.
 
 ## What it does
 
-- Paste a job description and search for matching candidates via Apollo when a paid Apollo API key is available.
-- Generate public sourcing search links from the job description.
-- Import callable candidates by CSV or add candidates manually.
-- Request Apollo phone enrichment for selected candidates when search results do not include phone numbers.
-- Save candidates to a dashboard.
-- Select a Hunar Voice AI agent and caller number.
-- Start single or bulk reachout calls through Hunar.
-- Sync Hunar call statuses and structured conversation results back into the dashboard.
-- Accept Hunar webhooks at `/api/webhooks/hunar`.
-- Includes a dedicated attendance-tracking proposal page matching the third assignment prompt.
+- Accepts a job title, location, and full job description.
+- Imports candidates via CSV or manual entry.
+- Lets you edit or delete imported/manual candidates before reachout.
+- Displays selectable candidate cards in Step 2.
+- Starts Hunar voice calls for selected candidates.
+- Shows a live dashboard of calls, statuses, recordings, and structured results.
+- Supports Hunar webhook sync for updated call information.
 
-## Security
+## Key features
 
-API keys are read only from environment variables on the server. They are never committed or exposed to browser code.
+- CSV/manual candidate intake without requiring Apollo search.
+- Candidate edit/delete actions in the sourcing panel.
+- Hunar agent and caller number selection.
+- Simple call dashboard with completed and interested metrics.
+- Structured result rendering in the dashboard.
+
+## Requirements
+
+- Node.js 18+
 
 ## Environment variables
 
-Copy `.env.example` to `.env` locally, then set:
+Create a `.env` file with:
 
-- `HUNAR_API_KEY`
-- `APOLLO_API_KEY`
-- optional `HUNAR_DEFAULT_AGENT_ID`
-- optional `HUNAR_DEFAULT_FROM_PHONE_NUMBER`
-- optional `HUNAR_WEBHOOK_SECRET`
-- `APP_BASE_URL` set to your deployed origin, for example `https://your-app.onrender.com`
+- `HUNAR_API_KEY` — required
+- `HUNAR_DEFAULT_AGENT_ID` — optional
+- `HUNAR_DEFAULT_FROM_PHONE_NUMBER` — optional
+- `HUNAR_WEBHOOK_SECRET` — optional
+- `APP_BASE_URL` — optional, useful for webhook callbacks in deployed environments
 
-Apollo People Search does not return phone numbers by default. This app uses Apollo People Enrichment for selected dashboard candidates. Phone enrichment requires `APP_BASE_URL` because Apollo returns mobile numbers asynchronously to `/api/webhooks/apollo`.
+## Run locally
 
-## Approved workaround note
+```bash
+npm install
+npm start
+```
 
-Apollo's People Search and People Enrichment APIs are not available on the free plan, and PDL/Proxycurl/Coresignal did not allow personal-email signup. Hunar replied: "Anything works. You can proceed with whatever seems feasible for you."
+Then open `http://localhost:3000`.
 
-Because of that approval, the deployed demo can be run end-to-end with CSV/manual candidate intake while preserving the required Hunar Voice AI reachout and dashboard workflow.
+## Deployment
 
-CSV columns:
+This app uses only Node.js built-ins, so it can run on Render, Railway, Fly.io, or any host that supports Node.
+
+Set the required environment variables in your deployment provider and use:
+
+```bash
+npm start
+```
+
+## CSV format
+
+Use this header row for CSV import:
 
 ```csv
 name,title,company,location,email,phone,linkedinUrl
 ```
 
-## Run locally
+## Notes
 
-```bash
-npm start
-```
-
-Open `http://localhost:3000`.
-
-## Deploy
-
-This app uses only Node.js built-ins, so it can be deployed to Render, Railway, Fly.io, an EC2 instance, or any Node host.
-
-Set the environment variables in your deployment provider before starting the app.
-
-Start command:
-
-```bash
-npm start
-```
-
-## API references used
-
-- Hunar Voice Agents external API: `https://api.voice.hunar.ai/docs/external/`
-- Apollo People API Search: `https://docs.apollo.io/reference/people-api-search`
+- The app is designed to work with Hunar voice calls as the main outreach channel.
+- Apollo search/enrichment is not required for the current CSV/manual workflow.
+- Candidate data is imported into the browser and synced through the dashboard via the server.
