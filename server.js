@@ -378,26 +378,32 @@ async function handleApi(req, res, url) {
     const callable = selected.filter((candidate) => candidate.phone || candidate.mobile_number);
     if (!callable.length) return badRequest(res, "Selected candidates do not have phone numbers");
 
+    const forwardedProto = String(req.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+    const protocol = forwardedProto || (req.socket?.encrypted ? "https" : "http");
+    const host = req.headers["x-forwarded-host"] || req.headers.host;
+    const requestOrigin = host ? `${protocol}://${String(host).replace(/\/$/, "")}` : undefined;
     const callbackUrl = process.env.APP_BASE_URL
       ? `${process.env.APP_BASE_URL.replace(/\/$/, "")}/api/webhooks/hunar`
-      : undefined;
+      : requestOrigin
+        ? `${requestOrigin}/api/webhooks/hunar`
+        : undefined;
 
     const callbackConfig = callbackUrl ? {
-  call_status_callback_url: callbackUrl,
-  call_result_callback_url: callbackUrl,
-  call_summary_callback_url: callbackUrl,
-  call_recording_callback_url: callbackUrl
-} : undefined;
+      call_status_callback_url: callbackUrl,
+      call_result_callback_url: callbackUrl,
+      call_summary_callback_url: callbackUrl,
+      call_recording_callback_url: callbackUrl
+    } : undefined;
 
-const shared = {
-  agent_id: agentId,
-  request_id: id("batch"),
-  from_phone_number:
-    body.fromPhoneNumber ||
-    process.env.HUNAR_DEFAULT_FROM_PHONE_NUMBER ||
-    undefined,
-  callback_config: callbackConfig
-};
+    const shared = {
+      agent_id: agentId,
+      request_id: id("batch"),
+      from_phone_number:
+        body.fromPhoneNumber ||
+        process.env.HUNAR_DEFAULT_FROM_PHONE_NUMBER ||
+        undefined,
+      callback_config: callbackConfig
+    };
 
     let createdCalls = [];
     if (callable.length === 1) {
@@ -458,7 +464,12 @@ const shared = {
       candidateIds.includes(candidate.id) ? { ...candidate, status: "REACHOUT_STARTED", updatedAt: now() } : candidate
     );
     await writeStore(store);
-    return json(res, 200, { calls: callRows });
+    return json(res, 200, {
+      calls: callRows,
+      callbackUrl,
+      candidateIds,
+      requestId: shared.request_id
+    });
   }
 
   if (req.method === "POST" && url.pathname === "/api/calls/sync") {
@@ -466,7 +477,18 @@ const shared = {
     const store = await readStore();
     const ids = Array.isArray(body.callIds) && body.callIds.length
       ? body.callIds
-      : store.calls.map((call) => call.hunarCallId).filter(Boolean);
+      : store.calls
+          .filter((call) => {
+            const status = String(call.lifecycleStatus || call.status || "").toUpperCase();
+            return !["CANCELLED", "FAILED"].includes(status) && (
+              ["SCHEDULED", "IN_PROGRESS"].includes(status) ||
+              !call.result ||
+              !call.recordingUrl
+            );
+          })
+          .slice(-10)
+          .map((call) => call.hunarCallId)
+          .filter(Boolean);
 
     const synced = [];
     for (const callId of ids) {
@@ -497,30 +519,62 @@ const shared = {
     const rawBody = Buffer.concat(chunks);
     if (!verifyHunarWebhook(req, rawBody)) return json(res, 401, { success: false, message: "Invalid webhook signature" });
 
-    const event = rawBody.length ? JSON.parse(rawBody.toString("utf8")) : {};
+    let event = {};
+    try {
+      event = rawBody.length ? JSON.parse(rawBody.toString("utf8")) : {};
+    } catch (error) {
+      console.warn("Hunar webhook received invalid JSON:", error.message);
+    }
+
     const call = event.call || event.data || event;
-    const callId = call.id || call.call_id || call.hunarCallId;
+    const callId = call?.id || call?.call_id || call?.hunarCallId;
+    const requestId = call?.request_id || call?.requestId || event?.request_id || event?.requestId;
+    const calleeName = call?.callee_name || call?.candidateName || event?.callee_name;
+    const mobileNumber = call?.mobile_number || call?.mobileNumber || event?.mobile_number;
+    const eventType = event.type || event.event_type || event.webhook_event || "hunar.webhook";
+    const receivedAt = now();
+
+    console.log("Hunar webhook received", {
+      eventType,
+      callId,
+      requestId,
+      calleeName,
+      mobileNumber,
+      status: call?.status,
+      lifecycleStatus: call?.lifecycle_status,
+      callbackUrl: req.headers["host"],
+      receivedAt
+    });
 
     const store = await readStore();
-    store.events.unshift({ id: id("evt"), receivedAt: now(), event });
-    if (callId) {
-      store.calls = store.calls.map((row) =>
-        row.hunarCallId === callId
-          ? {
-              ...row,
-              status: call.status || row.status,
-              lifecycleStatus: call.lifecycle_status || row.lifecycleStatus,
-              result: call.result || row.result,
-              recordingUrl: call.recording_url || row.recordingUrl,
-              durationSeconds: call.duration_seconds || row.durationSeconds,
-              updatedAt: now(),
-              raw: call
-            }
-          : row
-      );
+    store.events.unshift({ id: id("evt"), receivedAt, source: "hunar", eventType, callId, requestId, calleeName, mobileNumber, event });
+
+    let updated = false;
+    store.calls = store.calls.map((row) => {
+      const matchedByCallId = callId && row.hunarCallId === callId;
+      const matchedByRequest = requestId && row.requestId === requestId;
+      const matchedByPhone = mobileNumber && normalizePhone(row.mobileNumber) === normalizePhone(mobileNumber) && calleeName && row.candidateName === calleeName;
+      if (matchedByCallId || matchedByRequest || matchedByPhone) {
+        updated = true;
+        return {
+          ...row,
+          status: call.status || row.status,
+          lifecycleStatus: call.lifecycle_status || row.lifecycleStatus,
+          result: call.result || row.result,
+          recordingUrl: call.recording_url || row.recordingUrl,
+          durationSeconds: call.duration_seconds || row.durationSeconds,
+          updatedAt: receivedAt,
+          raw: call
+        };
+      }
+      return row;
+    });
+
+    if (!updated) {
+      console.warn("Hunar webhook event did not match any stored call row", { callId, requestId, calleeName, mobileNumber });
     }
     await writeStore(store);
-    return json(res, 200, { success: true });
+    return json(res, 200, { success: true, receivedAt, eventType, callId, requestId, matched: updated });
   }
 
   if (req.method === "POST" && url.pathname === "/api/webhooks/apollo") {
